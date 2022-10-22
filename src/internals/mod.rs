@@ -1,6 +1,9 @@
 use proc_macro2::TokenStream;
 use syn::{parse2, Result};
 
+trait Interpret<T> {
+    fn interpret(self) -> T;
+}
 trait Build {
     fn build(self) -> TokenStream;
 }
@@ -9,7 +12,7 @@ trait Build {
 mod define;
 pub(super) fn define(stream: TokenStream) -> Result<TokenStream> {
     use define::Define;
-    Ok(parse2::<Define>(stream)?.build())
+    Ok(parse2::<Define>(stream)?.interpret().build())
 }
 
 mod retrieve;
