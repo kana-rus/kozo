@@ -9,7 +9,7 @@ mod keyword {
 
 pub(super) struct Retrieve {
     idents: Punctuated<Ident, Comma>,
-    from:   keyword::from,
+    _from:   keyword::from,
     target: Ident,
 }
 
@@ -17,7 +17,7 @@ impl Parse for Retrieve {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
             idents: input.parse_terminated(Ident::parse)?,
-            from:   input.parse()?,
+            _from:   input.parse()?,
             target: input.parse()?,
         })
     }

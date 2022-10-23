@@ -1,4 +1,4 @@
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
 use syn::{punctuated::Punctuated, token::{Comma, Colon, Brace, Paren, Struct, Enum}, Type};
 
 mod parser;
@@ -20,6 +20,26 @@ pub(super) enum New {
         _brace: Brace,
         fields: Punctuated<EnumField, Comma>,
     },
+} impl New {
+    pub fn name(&self) -> Ident {
+        match self {
+            New::Struct {
+                _struct,
+                name,
+                _brace,
+                #[allow(unused)]  // match で fields を取り出すので直接アクセスしない
+                fields
+            } => name,
+            New::Enum {
+                _enum,
+                name,
+                _brace,
+                #[allow(unused)]  // match で fields を取り出すので直接アクセスしない
+                fields
+            } => name,
+        }.clone()
+    }
+
 }
 
 pub(super) struct StructField {
@@ -44,6 +64,6 @@ pub(super) enum EnumContent {
 }
 
 pub(super) enum Content {
-    Existing(Ident),
+    Existing(TokenStream),
     New(New),
 }
