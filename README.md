@@ -11,19 +11,16 @@ Current kozo provides:
 `define!` macro enables to define nested structs in a way easy to see.
 
 ```rs
-define!(struct DeepNestedStruct {
+use kozo::define;
+
+define!(struct NestedStruct {
     a: Vec<u8>,
     b: struct B {
-        c: String,
-        d: struct D {
+        c: struct C {
+            d: u8,
             e: u8,
-            f: u8,
         },
-    },
-    b2: B,
-    e: struct E {
-        f: &'static str,
-        g: enum G {
+        f: enum F {
             X,
             Y,
             Other {
@@ -33,29 +30,42 @@ define!(struct DeepNestedStruct {
         },
     },
 });
+
+fn main() {
+    let sample = NestedStruct {
+        a: vec![1, 1, 0, 1, 0, 1, 1],
+        b: B {
+            c: C {
+                d: 0,
+                e: 1,
+            },
+            f: F::X,
+        },
+    };
+
+    println!("{}", sample.b.c.d);  // 0
+}
 ```
+( examples/define_sample.rs )
+
+<br/>
+
 Then, `define!` is **just a syntax sugar** of defining each named structs separately like
 
 ```rs
 struct DeepNestedStruct {
     a: Vec<u8>,
     b: B,
-    b2: B2,
-    e: E,
 }
 struct B {
-    c: String,
-    d: D,
+    c: C,
+    f: F,
 }
-struct D {
+struct C {
+    d: u8,
     e: u8,
-    f: u8,
 }
-struct E {
-    f: &'static str,
-    g: G,
-}
-enum G {
+enum F {
     X,
     Y,
     Other {
@@ -88,7 +98,7 @@ fn main() {
         a: 0,
         b: B {
             c: "I have an apple?".into(),
-            d: vec![1, 1, 0, 1, 0, 1, 1,],
+            d: vec![1, 1, 0, 1, 0, 1, 1],
         },
     };
     retrieve!(a, b from s);
@@ -97,6 +107,7 @@ fn main() {
     println!("{}", b.c);
 }
 ```
+( examples/retrieve_sample.rs )
 
 <br/>
 <br/>

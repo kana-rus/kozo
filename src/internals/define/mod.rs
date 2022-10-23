@@ -6,7 +6,9 @@ mod interpreter;
 mod builder;
 
 
-pub struct Define(New);
+pub struct Define(
+    New
+);
 pub(super) enum New {
     Struct {
         _struct: Struct,

@@ -81,15 +81,15 @@ impl Parse for EnumContent {
 
 impl Parse for Content {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        if input.peek(Ident) {
-            Ok(Self::Existing(
-                input.parse().unwrap()
-            ))
-        } else if input.peek(token::Struct) || input.peek(token::Enum) {
+        if input.peek(token::Struct) || input.peek(token::Enum) {
             Ok(Self::New(
                 input.parse()?
             ))
-        } else {
+        } else if input.peek(Ident) {
+            Ok(Self::Existing(
+                input.parse().unwrap()
+            ))
+        } else  {
             Err(Error::new(
                 Span::call_site(),
 "Only
