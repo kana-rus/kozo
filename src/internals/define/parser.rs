@@ -48,7 +48,7 @@ impl Parse for StructField {
 impl Parse for EnumField {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            name:    input.parse()?,
+            name: input.parse()?,
             content:
                 if input.peek(token::Paren)
                 || input.peek(token::Brace) {
@@ -81,7 +81,8 @@ impl Parse for EnumContent {
 
 impl Parse for Content {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        if input.peek(token::Struct) || input.peek(token::Enum) {
+        if input.peek(token::Struct)
+        || input.peek(token::Enum) {
             Ok(Self::New(
                 input.parse()?
             ))

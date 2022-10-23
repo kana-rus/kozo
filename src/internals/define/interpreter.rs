@@ -48,7 +48,7 @@ fn interpret_new(new: New, list: &mut Vec<Def>) {
                 let field_name = field.name;
                 let value_type = match field.value {
                     Content::Existing(type_expr) => {
-                        type_expr
+                        quote!(#type_expr)
                     },
                     Content::New(new) => {
                         let type_name = new.name();
@@ -103,7 +103,7 @@ fn interpret_new(new: New, list: &mut Vec<Def>) {
                             for field in fields {
                                 let field_name = field.name;
                                 let value_type = match field.value {
-                                    Content::Existing(type_expr) => type_expr,
+                                    Content::Existing(type_expr) => quote!(#type_expr),
                                     Content::New(new) => {
                                         let type_name = new.name();
                                         interpret_new(new, list);
