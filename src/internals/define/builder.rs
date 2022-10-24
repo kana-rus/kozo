@@ -37,7 +37,7 @@ impl Build for List {
                     for variant in def.fields {
                         let (name, content) = (variant.name, variant.value_type);
                         variants.extend(quote!(
-                            #name #content
+                            #name #content,
                         ))
                     }
                     result.extend(quote!(
