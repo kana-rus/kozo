@@ -74,16 +74,16 @@ pub(super) enum Content {
 #[cfg(test)]
 mod test {
     use std::fmt::Debug;
-
     use proc_macro2::Span;
     use quote::{quote, format_ident};
     use syn::{punctuated::Punctuated, token, Type, parse2};
     use super::{Define, New, StructField, EnumField, EnumContent, Content};
 
+
     #[test]
     fn parse_non_nested_1() {
         let case = quote!(
-            struct NestedStruct {
+            struct NonNestedStruct {
                 a: Vec<u8>,
                 b: u8,
             }
@@ -95,7 +95,7 @@ mod test {
             },
             Define(New::Struct {
                 _struct: token::Struct(Span::call_site()),
-                name:    format_ident!("NestedStruct"),
+                name:    format_ident!("NonNestedStruct"),
                 _brace:  token::Brace(Span::call_site()),
                 fields:  Punctuated::<StructField, token::Comma>::from_iter([
                     StructField {
@@ -116,6 +116,135 @@ mod test {
             })
         )
     }
+    #[test]
+    fn parse_nested_1() {
+        let case = quote!(
+            struct NestedStruct {
+                a: struct A {
+                    b: u8,
+                    c: u8,
+                },
+            }
+        );
+        assert_eq!(
+            match parse2::<Define>(case) {
+                Err(error) => panic!("{}", error.to_string()),
+                Ok(define) => define
+            },
+            Define(New::Struct {
+                _struct: token::Struct(Span::call_site()),
+                name:    format_ident!("NestedStruct"),
+                _brace:  token::Brace(Span::call_site()),
+                fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                    StructField {
+                        name:   format_ident!("a"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::New(New::Struct {
+                            _struct: token::Struct(Span::call_site()),
+                            name:    format_ident!("A"),
+                            _brace:  token::Brace(Span::call_site()),
+                            fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                                StructField {
+                                    name:   format_ident!("b"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                },
+                                StructField {
+                                    name:   format_ident!("c"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                }
+                            ])
+                        }),
+                    },
+                ].into_iter()),
+            })
+        )
+    }
+    #[test]
+    fn parse_nested_2() {
+        let case = quote!(
+            struct NestedStruct {
+                a: struct A {
+                    b: u8,
+                    c: u8,
+                },
+                d: struct D {
+                    e: String,
+                    f: Vec<u8>,
+                },
+            }
+        );
+        assert_eq!(
+            match parse2::<Define>(case) {
+                Err(error) => panic!("{}", error.to_string()),
+                Ok(define) => define
+            },
+            Define(New::Struct {
+                _struct: token::Struct(Span::call_site()),
+                name:    format_ident!("NestedStruct"),
+                _brace:  token::Brace(Span::call_site()),
+                fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                    StructField {
+                        name:   format_ident!("a"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::New(New::Struct {
+                            _struct: token::Struct(Span::call_site()),
+                            name:    format_ident!("A"),
+                            _brace:  token::Brace(Span::call_site()),
+                            fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                                StructField {
+                                    name:   format_ident!("b"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                },
+                                StructField {
+                                    name:   format_ident!("c"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                }
+                            ])
+                        }),
+                    },
+                    StructField {
+                        name:   format_ident!("d"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::New(New::Struct {
+                            _struct: token::Struct(Span::call_site()),
+                            name:    format_ident!("D"),
+                            _brace:  token::Brace(Span::call_site()),
+                            fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                                StructField {
+                                    name:   format_ident!("e"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        String
+                                    )))
+                                },
+                                StructField {
+                                    name:   format_ident!("f"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        Vec<u8>
+                                    )))
+                                }
+                            ])
+                        }),
+                    },
+                ].into_iter()),
+            })
+        )
+    }
+
+
 
 
     fn punctuated_eq<T: PartialEq>(x: &Punctuated<T, token::Comma>, y: &Punctuated<T, token::Comma>) -> bool {
@@ -274,22 +403,51 @@ mod test {
     }
     impl Debug for StructField {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            todo!()
+            write!(f, "{}:{:?}", self.name, self.value)
         }
     }
     impl Debug for EnumField {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            todo!()
+            write!(f, "{}{}", self.name, {
+                let content = &self.content;
+                match content {
+                    None => "".into(),
+                    Some(enum_content) => format!("{:?}", enum_content)
+                }
+            })
         }
     }
     impl Debug for EnumContent {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            todo!()
+            write!(f, "{}", match self {
+                EnumContent::Tupple {
+                    _paren, types
+                } => {
+                    let mut fmt = String::from("(");
+                    for t in types {
+                        fmt += &quote!(#t).to_string();
+                        fmt += ","
+                    }
+                    fmt + ")"
+                },
+                EnumContent::Struct {
+                    _brace, fields
+                } => {
+                    let mut fmt = String::from("{");
+                    for f in fields {
+                        fmt += &format!("{:?},", f);
+                    }
+                    fmt + "}"
+                },
+            })
         }
     }
     impl Debug for Content {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            todo!()
+            write!(f, "{}", match self {
+                Content::Existing(t) => quote!(#t).to_string(),
+                Content::New(new) => format!("{:?}", new)
+            })
         }
     }
 }
