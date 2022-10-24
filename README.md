@@ -1,5 +1,5 @@
 kozo provides some syntax sugars to use Rust's struct easily.\
-Current kozo provides:
+Current kozo provides following 2 proc macros:
 
 - `define!`
 - `retrieve!`
