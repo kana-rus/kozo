@@ -1,6 +1,5 @@
 use proc_macro2::Span;
 use syn::{parse::Parse, token, braced, Error, parenthesized, Ident};
-
 use super::*;
 
 impl Parse for Define {
@@ -100,5 +99,181 @@ impl Parse for Content {
 are allowed as type"
             ))
         }
+    }
+}
+
+
+
+
+#[cfg(test)]
+mod test {
+    use proc_macro2::Span;
+    use quote::{quote, format_ident};
+    use syn::{parse2, token, punctuated::Punctuated, Type};
+
+    use crate::internals::define::{Define, New, StructField, Content};
+
+    #[test]
+    fn parse_non_nested_1() {
+        let case = quote!(
+            struct NonNestedStruct {
+                a: Vec<u8>,
+                b: u8,
+            }
+        );
+        assert_eq!(
+            match parse2::<Define>(case) {
+                Err(error) => panic!("{}", error.to_string()),
+                Ok(define) => define
+            },
+            Define(New::Struct {
+                _struct: token::Struct(Span::call_site()),
+                name:    format_ident!("NonNestedStruct"),
+                _brace:  token::Brace(Span::call_site()),
+                fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                    StructField {
+                        name:   format_ident!("a"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::Existing(Type::Verbatim(quote!(
+                            Vec<u8>
+                        ))),
+                    },
+                    StructField {
+                        name:   format_ident!("b"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::Existing(Type::Verbatim(quote!(
+                            u8
+                        ))),
+                    },
+                ].into_iter()),
+            })
+        )
+    }
+    #[test]
+    fn parse_nested_1() {
+        let case = quote!(
+            struct NestedStruct {
+                a: struct A {
+                    b: u8,
+                    c: u8,
+                },
+            }
+        );
+        assert_eq!(
+            match parse2::<Define>(case) {
+                Err(error) => panic!("{}", error.to_string()),
+                Ok(define) => define
+            },
+            Define(New::Struct {
+                _struct: token::Struct(Span::call_site()),
+                name:    format_ident!("NestedStruct"),
+                _brace:  token::Brace(Span::call_site()),
+                fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                    StructField {
+                        name:   format_ident!("a"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::New(New::Struct {
+                            _struct: token::Struct(Span::call_site()),
+                            name:    format_ident!("A"),
+                            _brace:  token::Brace(Span::call_site()),
+                            fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                                StructField {
+                                    name:   format_ident!("b"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                },
+                                StructField {
+                                    name:   format_ident!("c"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                }
+                            ])
+                        }),
+                    },
+                ].into_iter()),
+            })
+        )
+    }
+    #[test]
+    fn parse_nested_2() {
+        let case = quote!(
+            struct NestedStruct {
+                a: struct A {
+                    b: u8,
+                    c: u8,
+                },
+                d: struct D {
+                    e: String,
+                    f: Vec<u8>,
+                },
+            }
+        );
+        assert_eq!(
+            match parse2::<Define>(case) {
+                Err(error) => panic!("{}", error.to_string()),
+                Ok(define) => define
+            },
+            Define(New::Struct {
+                _struct: token::Struct(Span::call_site()),
+                name:    format_ident!("NestedStruct"),
+                _brace:  token::Brace(Span::call_site()),
+                fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                    StructField {
+                        name:   format_ident!("a"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::New(New::Struct {
+                            _struct: token::Struct(Span::call_site()),
+                            name:    format_ident!("A"),
+                            _brace:  token::Brace(Span::call_site()),
+                            fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                                StructField {
+                                    name:   format_ident!("b"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                },
+                                StructField {
+                                    name:   format_ident!("c"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        u8
+                                    )))
+                                }
+                            ])
+                        }),
+                    },
+                    StructField {
+                        name:   format_ident!("d"),
+                        _colon: token::Colon(Span::call_site()),
+                        value:  Content::New(New::Struct {
+                            _struct: token::Struct(Span::call_site()),
+                            name:    format_ident!("D"),
+                            _brace:  token::Brace(Span::call_site()),
+                            fields:  Punctuated::<StructField, token::Comma>::from_iter([
+                                StructField {
+                                    name:   format_ident!("e"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        String
+                                    )))
+                                },
+                                StructField {
+                                    name:   format_ident!("f"),
+                                    _colon: token::Colon(Span::call_site()),
+                                    value:  Content::Existing(Type::Verbatim(quote!(
+                                        Vec<u8>
+                                    )))
+                                }
+                            ])
+                        }),
+                    },
+                ].into_iter()),
+            })
+        )
     }
 }

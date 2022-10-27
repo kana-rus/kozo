@@ -4,7 +4,9 @@ use crate::internals::Interpret;
 use super::{Define, New, Content, EnumContent};
 
 
-pub(crate) struct List(Vec<Def>);
+pub(crate) struct List(
+    pub Vec<Def>
+);
 #[derive(Clone)]
 pub(crate) struct Def {
     pub content_type: ContentType,
@@ -141,7 +143,6 @@ fn interpret_new(new: New, list: &mut Vec<Def>) {
 
 #[cfg(test)]
 mod test {
-    use std::fmt::Debug;
     use quote::{quote, format_ident};
     use syn::parse2;
     use crate::internals::{define::Define, Interpret};
@@ -156,7 +157,7 @@ mod test {
                     c: u8,
                 },
             }
-        )).unwrap(/* this parsing passed in mod.rs::test */);
+        )).unwrap(/* this parsing passed in parser::test */);
         assert_eq!(
             case.interpret(),
             List(vec![
@@ -200,7 +201,7 @@ mod test {
                     f: Vec<u8>,
                 },
             }
-        )).unwrap(/* this parsing passed in mod.rs::test */);
+        )).unwrap(/* this parsing passed in parser::test */);
         assert_eq!(
             case.interpret(),
             List(vec![
@@ -248,88 +249,5 @@ mod test {
                 }
             ])
         )
-    }
-
-
-
-
-    impl PartialEq for List {
-        fn eq(&self, other: &Self) -> bool {
-            eq_as_set(&self.0, &other.0)
-        }
-    }
-    impl PartialEq for Def {
-        fn eq(&self, other: &Self) -> bool {
-            self.content_type == other.content_type &&
-            self.name == other.name &&
-            eq_as_set(&self.fields, &other.fields)
-        }
-    }
-    impl PartialEq for ContentType {
-        fn eq(&self, other: &Self) -> bool {
-            match self {
-                ContentType::Enum => match other {
-                    ContentType::Enum   => true,
-                    ContentType::Struct => false,
-                },
-                ContentType::Struct => match other {
-                    ContentType::Enum   => false,
-                    ContentType::Struct => true,
-                }
-            }
-        }
-    }
-    impl PartialEq for FieldDef {
-        fn eq(&self, other: &Self) -> bool {
-            self.name == other.name &&
-            self.value_type.to_string() == other.value_type.to_string()
-        }
-    }
-
-    impl Debug for List {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "List{:?}", self.0)
-        }
-    }
-    impl Debug for Def {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "{}", match self.content_type {
-                ContentType::Enum => {
-                    let mut fmt = format!("enum {}{{", self.name);
-                    for variant in &self.fields {
-                        fmt += &format!("{}{},", variant.name, variant.value_type)
-                    }
-                    fmt + "}"
-                },
-                ContentType::Struct => {
-                    let mut fmt = format!("struct {}{{", self.name);
-                    for field in &self.fields {
-                        fmt += &format!("{}:{},", field.name, field.value_type)
-                    }
-                    fmt + "}"
-                },
-            })
-        }
-    }
-
-    fn eq_as_set<T: PartialEq + Clone>(x: &Vec<T>, y: &Vec<T>) -> bool {
-        let mut count = x.len();
-        if count != y.len() {return false}
-
-        let mut xindex = (0..count).collect::<Vec<_>>();
-        for ty in y {
-            let mut found = false;
-            for i in 0..count {
-                if &x[xindex[i]] == ty {
-                    found = true;
-                    xindex.remove(i);
-                    count -= 1;
-                    if count == 0 {return true}
-                    break
-                }
-            }
-            if !found {return false}
-        }
-        false
     }
 }
