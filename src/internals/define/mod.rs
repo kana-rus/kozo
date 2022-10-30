@@ -27,12 +27,10 @@ pub(super) enum New {
     pub fn name(&self) -> Ident {
         match self {
             New::Struct {
-                _struct, name, _brace,
-                #[allow(unused)] fields
+                _struct, name, _brace, fields: _
             } => name,
             New::Enum {
-                _enum, name, _brace,
-                #[allow(unused)] fields
+                _enum, name, _brace, fields: _
             } => name,
         }.clone()
     }

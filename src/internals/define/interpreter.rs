@@ -42,10 +42,7 @@ impl Interpret<List> for Define {
 fn interpret_new(new: New, list: &mut Vec<Def>) {
     match new {
         New::Struct {
-            _struct,
-            name,
-            _brace,
-            fields
+            _struct, name, _brace, fields
         } => {
             let mut struct_fields = Vec::new();
             for field in fields {
@@ -74,10 +71,7 @@ fn interpret_new(new: New, list: &mut Vec<Def>) {
             })
         },
         New::Enum {
-            _enum,
-            name,
-            _brace,
-            fields
+            _enum, name, _brace, fields
         } => {
             let mut enum_fields = Vec::new();
             for field in fields {
