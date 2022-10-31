@@ -7,9 +7,8 @@ use crate::internals::Build;
 impl Build for List {
     fn build(self) -> proc_macro2::TokenStream {
         let mut result = TokenStream::new();
-        
-        let list: List = self.into();
-        for def in list {
+
+        for def in self {
             let name = def.name;
             match def.content_type {
                 ContentType::Struct => {
@@ -67,8 +66,8 @@ mod test {
                     c: u8,
                 },
             }
-        )).unwrap(/* this parsing passed in deine::test */)
-            .interpret(/* this interpreting passed in define::interpreter::test */);
+        )).unwrap(/* this parsing passed in parser::test */)
+            .interpret(/* this interpreting passed in interpreter::test */);
         assert_eq!(
             case.build().to_string(),
             quote!(
@@ -95,8 +94,8 @@ mod test {
                     f: Vec<u8>,
                 },
             }
-        )).unwrap(/* this parsing passed in deine::test */)
-            .interpret(/* this interpreting passed in define::interpreter::test */);
+        )).unwrap(/* this parsing passed in parser::test */)
+            .interpret(/* this interpreting passed in interpreter::test */);
         assert_eq!(
             case.build().to_string(),
             quote!(
@@ -127,8 +126,8 @@ mod test {
                     e: u8,
                 },
             }
-        )).unwrap(/* this parsing passed in deine::test */)
-            .interpret(/* this interpreting would pass in define::interpreter::test */);
+        )).unwrap(/* this parsing passed in parser::test */)
+            .interpret(/* this interpreting would pass in interpreter::test */);
         assert_eq!(
             case.build().to_string(),
             quote!(

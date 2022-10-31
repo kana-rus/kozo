@@ -71,30 +71,18 @@ mod partial_eq {
         fn eq(&self, other: &Self) -> bool {
             match self {
                 New::Struct {
-                    _struct,
-                    name: self_name,
-                    _brace,
-                    fields: self_fields
+                    _struct, name: self_name, _brace, fields: self_fields
                 } => match other {
                     New::Struct {
-                        _struct,
-                        name: other_name,
-                        _brace,
-                        fields: other_fields
+                        _struct, name: other_name, _brace, fields: other_fields
                     } => self_name==other_name && punctuated_eq(self_fields, other_fields),
                     _ => false,
                 }
                 New::Enum {
-                    _enum,
-                    name: self_name,
-                    _brace,
-                    fields: self_variants
+                    _enum, name: self_name, _brace, fields: self_variants
                 } => match other {
                     New::Enum {
-                        _enum,
-                        name: other_name,
-                        _brace,
-                        fields: other_variants
+                        _enum, name: other_name, _brace, fields: other_variants
                     } => self_name==other_name && punctuated_eq(self_variants, other_variants),
                     _ => false
                 }
