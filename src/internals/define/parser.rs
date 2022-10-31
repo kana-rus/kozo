@@ -1,5 +1,4 @@
-use proc_macro2::Span;
-use syn::{parse::Parse, token, braced, Error, parenthesized, Ident};
+use syn::{parse::Parse, token, braced, parenthesized, Ident};
 use super::*;
 
 impl Parse for Define {
@@ -26,8 +25,7 @@ impl Parse for New {
                 fields: fields_buf.parse_terminated(EnumField::parse)?
             })
         } else {
-            Err(Error::new(
-                Span::call_site(),
+            Err(input.error(
                 "content of `define!` must starts with `struct` or `enum`."
             ))
         }
@@ -90,8 +88,7 @@ impl Parse for Content {
                 input.parse().unwrap()
             ))
         } else  {
-            Err(Error::new(
-                Span::call_site(),
+            Err(input.error(
 "Only
 - existing type
 - new struct
